@@ -1,0 +1,183 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>VD-Net — User Home</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Inter font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    body, button, input, select, textarea { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+    header.custom { background: linear-gradient(90deg, #7c3aed 0%, #4f46e5 50%, #06b6d4 100%); box-shadow: 0 4px 12px rgb(124 58 237 / 0.45); }
+    .btn-strong { font-weight: 700; letter-spacing: 0.3px; border-radius: 0.75rem; transition: transform 0.25s ease, box-shadow 0.25s ease; }
+    .btn-strong:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+    .card { background: white; border-radius: 1rem; box-shadow: 0 8px 16px rgba(2,6,23,0.06); }
+    .field { transition: box-shadow .2s ease, transform .1s ease; }
+    .field:focus { box-shadow: 0 0 0 3px rgba(79,70,229,.25); transform: translateY(-1px); outline: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-gray-50 text-slate-900 antialiased">
+
+  <!-- Header / Navbar -->
+  <header class="custom text-white shadow sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="user_home" class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-md flex items-center justify-center font-extrabold text-lg bg-white/15 backdrop-blur-sm">VD</div>
+        <div>
+          <div class="text-lg font-extrabold tracking-wide">VD-Net</div>
+          <div class="text-xs opacity-90">Violence Detection — User</div>
+        </div>
+      </a>
+      <nav>
+        <ul class="flex gap-6 font-semibold items-center">
+          <li><a href="userhome" class="hover:opacity-90 transition">Home</a></li>
+          <li><a href="#upload" class="hover:opacity-90 transition">Upload Video</a></li>
+           <li><a href="/ulogin" class="hover:opacity-90 transition">Logout</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1">
+    <!-- Hero strip -->
+    <section class="bg-gradient-to-r from-indigo-50 to-cyan-50 border-b">
+      <div class="max-w-7xl mx-auto px-6 py-10">
+        <h1 class="text-2xl md:text-3xl font-extrabold">Welcome to {{request.session.email}}</h1>
+        <p class="mt-2 text-slate-600">Upload a video clip to detect violence vs non‑violence using the deployed pretrained model. Frames are extracted server‑side for inference.</p>
+      </div>
+    </section>
+
+    <div class="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-3 gap-8">
+      <!-- Left: Upload card -->
+      <section id="upload" class="lg:col-span-2 card p-6">
+        <h2 class="text-xl font-bold">Upload Video</h2>
+        <p class="mt-1 text-sm text-slate-600">Supported formats: mp4, avi, mov, mpeg. Max size as configured by server.</p>
+
+        <!-- Django messages -->
+        {% if messages %}
+          <div class="mt-4 space-y-2">
+            {% for message in messages %}
+              <div class="p-3 text-sm rounded-lg
+                {% if message.tags == 'error' %} bg-rose-50 text-rose-700 border border-rose-200
+                {% elif message.tags == 'success' %} bg-emerald-50 text-emerald-700 border border-emerald-200
+                {% else %} bg-sky-50 text-sky-700 border border-sky-200 {% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form id="uploadForm" method="post" action="user_upload_video" enctype="multipart/form-data" class="mt-6 space-y-5">
+          {% csrf_token %}
+
+          <!-- File input -->
+          <div>
+            <label for="video" class="block text-sm font-medium text-slate-700">Choose a video</label>
+            <input
+              id="video"
+              name="video"
+              type="file"
+              accept="video/*"
+              required
+              class="field mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900"/>
+                   </div>
+
+
+          <!-- Submit -->
+          <div class="flex items-center gap-3">
+            <button type="submit" class="btn-strong bg-indigo-600 text-white px-6 py-3 hover:bg-indigo-700">
+              Upload & Analyze
+            </button>
+            <span id="uploadHint" class="text-sm text-slate-500">The server will extract frames and run the pretrained model.</span>
+          </div>
+        </form>
+
+        <!-- Progress / status -->
+        <div id="progressBox" class="hidden mt-6 p-4 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-900">
+          Uploading and processing… This may take a moment for longer videos.
+        </div>
+      </section>
+
+      <!-- Right: Result card -->
+      <aside class="card p-6">
+        <h3 class="text-lg font-bold">Latest Result</h3>
+        {% if result %}
+          <div class="mt-4 p-4 rounded-lg bg-gray-50 border">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm text-slate-600">Prediction</div>
+                <div class="mt-1 text-xl font-extrabold">
+                  {{ result.label_name }}
+                </div>
+                <div class="text-sm text-slate-600">Confidence Score</div>
+                 <div class="mt-1 text-xl font-extrabold">
+                  {{ result.probability }}
+                </div>
+              </div>
+
+            </div>
+
+
+          </div>
+        {% else %}
+          <p class="mt-3 text-sm text-slate-600">No predictions yet. Upload a video to see results here.</p>
+        {% endif %}
+
+        <!-- History link -->
+
+      </aside>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t">
+    <div class="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center text-sm text-gray-600">
+      <div>© <span id="year"></span> VD-Net • Violence Detection</div>
+      <div class="mt-3 md:mt-0">User portal — upload and analyze videos.</div>
+    </div>
+  </footer>
+
+  <!-- JS: preview & basic UX -->
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const fileInput = document.getElementById('video');
+    const previewWrap = document.getElementById('previewWrap');
+    const previewVideo = document.getElementById('previewVideo');
+    const form = document.getElementById('uploadForm');
+    const progressBox = document.getElementById('progressBox');
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) {
+        previewWrap.classList.add('hidden');
+        previewVideo.removeAttribute('src');
+        return;
+      }
+      // Quick client-side type check
+      if (!file.type.startsWith('video/')) {
+        alert('Please select a valid video file.');
+        fileInput.value = '';
+        previewWrap.classList.add('hidden');
+        previewVideo.removeAttribute('src');
+        return;
+      }
+      const url = URL.createObjectURL(file);
+      previewVideo.src = url;
+      previewVideo.load();
+      previewWrap.classList.remove('hidden');
+    });
+
+    form.addEventListener('submit', () => {
+      progressBox.classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>

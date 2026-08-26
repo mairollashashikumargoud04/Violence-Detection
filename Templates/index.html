@@ -1,0 +1,293 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>VD-Net — Dataset & Model Manager</title>
+
+  <!-- Google Fonts for better typography -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Use Inter font throughout */
+    body, button, input, select, textarea {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    }
+
+    /* banner with smoother dark gradient overlay */
+    .banner-bg {
+      position: relative;
+      background-image: url("{% static 'images/banner.webp' %}");
+      background-size: cover;
+      background-position: center;
+    }
+    .banner-bg::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(8,16,36,0.6) 0%, rgba(8,16,36,0.9) 100%);
+      mix-blend-mode: multiply;
+    }
+
+    /* card improvements: rounded corners, subtle scale and shadow on hover */
+    .card-spot {
+      transition: transform 0.35s cubic-bezier(.4,0,.2,1), box-shadow 0.35s ease, background 0.35s ease;
+      will-change: transform;
+      border-radius: 1rem;
+      box-shadow: 0 8px 16px rgba(2,6,23,0.07);
+      background: white;
+    }
+    .card-spot:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 24px 48px rgba(2,6,23,0.15);
+      background: #f9fafb;
+    }
+
+    /* stronger pastel hover overlay accent colors */
+    .hover-accent-1:hover { background: linear-gradient(135deg, rgba(14,165,233,0.15), rgba(99,102,241,0.12)); }
+    .hover-accent-2:hover { background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.10)); }
+    .hover-accent-3:hover { background: linear-gradient(135deg, rgba(250,204,21,0.15), rgba(250,204,21,0.08)); }
+
+    /* custom header gradient with subtle shadow/gloss */
+    header.custom {
+      background: linear-gradient(90deg, #7c3aed 0%, #4f46e5 50%, #06b6d4 100%);
+      box-shadow: 0 4px 12px rgb(124 58 237 / 0.45);
+    }
+
+    /* stronger button emphasis and smooth scaling */
+    .btn-strong {
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      border-radius: 0.75rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .btn-strong:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+    /* smooth transitions for nav links */
+    nav a:hover {
+      opacity: 0.9;
+      transition: opacity 0.25s ease;
+      text-decoration: underline;
+    }
+
+    /* footer refinement */
+    footer {
+      background: #fafafa;
+      border-top: 2px solid #e5e7eb;
+    }
+    footer div {
+      color: #6b7280;
+    }
+
+    /* subtle banner text shadow for readability */
+    .banner-body {
+      text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+    }
+
+    /* responsive banner text padding adjustment */
+    @media (max-width: 768px) {
+      .banner-body {
+        padding: 4rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-slate-900 antialiased font-inter">
+
+  <!-- HEADER -->
+  <header class="custom text-white shadow sticky top-0 z-50 font-inter">
+    <div class="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-lg flex items-center justify-center font-extrabold text-xl bg-white/15 backdrop-blur-sm">VD</div>
+        <div class="leading-tight">
+          <div class="text-xl font-extrabold tracking-wide">VD-Net</div>
+          <div class="text-xs tracking-wide opacity-85">Edge Vision-Based Surveillance for Violence Detection</div>
+        </div>
+      </div>
+
+      <nav>
+        <ul class="flex gap-8 font-semibold items-center text-lg">
+          <li><a href="/" aria-label="Home" class="hover:opacity-90 transition">Home</a></li>
+          <li><a href="/alogin" aria-label="Admin Login" class="hover:opacity-90 transition">Admin</a></li>
+          <li><a href="/ulogin" aria-label="User Login" class="hover:opacity-90 transition">User</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- BANNER / HERO -->
+  <section id="home" class="banner-bg relative text-white">
+    <div class="relative z-10 max-w-5xl mx-auto px-8 py-32 banner-body text-center drop-shadow-lg">
+      <h1 class="text-4xl md:text-6xl font-extrabold leading-tight tracking-tight">VD-Net — Dataset & Model Manager</h1>
+      <p class="mt-6 max-w-3xl mx-auto text-xl text-gray-200/90">Upload your dataset, train a violence detection model on the server, and let users test video clips for violence / non-violence predictions. A simple workflow for research & academic experiments.</p>
+
+      <div class="mt-10 flex flex-wrap justify-center gap-6">
+        <a href="/ulogin" class="px-8 py-4 rounded-2xl bg-white text-slate-900 btn-strong shadow-lg hover:scale-105 transition">Get Started (User)</a>
+        <a href="/alogin" class="px-8 py-4 rounded-2xl bg-transparent border border-white/30 btn-strong hover:bg-white/10 transition">Admin Console</a>
+      </div>
+    </div>
+
+    <div class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/40 to-transparent"></div>
+  </section>
+
+  <!-- MAIN BODY -->
+  <main class="max-w-7xl mx-auto px-8 py-16 space-y-12">
+
+    <!-- Top summary (two-column) -->
+    <section class="grid md:grid-cols-2 gap-8 items-start">
+      <!-- Admin workflow summary -->
+      <div class="bg-white rounded-xl p-8 shadow-sm card-spot">
+        <h2 class="text-2xl font-bold">Admin: Manage Dataset & Models</h2>
+        <p class="mt-3 text-gray-600">As admin, you can upload datasets (zipped video folders or labelled clips), start training jobs, monitor training progress, and deploy trained models to the prediction service. All heavy operations are done on the server — no device integration needed.</p>
+
+        <div class="mt-6 flex gap-4 flex-wrap">
+          <a href="/admin/upload" class="px-6 py-3 rounded-lg bg-indigo-600 text-white btn-strong shadow hover:opacity-95 transition">Upload Dataset</a>
+          <a href="/admin/build" class="px-6 py-3 rounded-lg bg-emerald-500 text-white btn-strong shadow hover:opacity-95 transition">Start Training</a>
+          <a href="/admin/jobs" class="px-6 py-3 rounded-lg bg-gray-100 text-slate-800 btn-strong border border-gray-200">Training Jobs</a>
+        </div>
+
+        <div class="mt-8 grid grid-cols-3 gap-6">
+          <div class="p-4 rounded-lg bg-gray-50 text-center shadow">
+            <div class="text-sm text-gray-500">Datasets</div>
+            <div class="text-xl font-semibold">1</div>
+          </div>
+          <div class="p-4 rounded-lg bg-gray-50 text-center shadow">
+            <div class="text-sm text-gray-500">Active Jobs</div>
+            <div class="text-xl font-semibold">2</div>
+          </div>
+          <div class="p-4 rounded-lg bg-gray-50 text-center shadow">
+            <div class="text-sm text-gray-500">Deployed Models</div>
+            <div class="text-xl font-semibold">2</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User workflow summary -->
+      <div class="bg-white rounded-xl p-8 shadow-sm card-spot">
+        <h2 class="text-2xl font-bold">User: Register & Predict</h2>
+        <p class="mt-3 text-gray-600">Users register and log in to upload test videos. The server runs the selected trained model and returns a prediction (Violence / Non-violence) with confidence score.</p>
+
+        <div class="mt-6 flex gap-4 flex-wrap">
+          <a href="/user/register" class="px-6 py-3 rounded-lg bg-amber-400 text-black btn-strong shadow hover:opacity-95 transition">Register</a>
+          <a href="/user/login" class="px-6 py-3 rounded-lg bg-indigo-600 text-white btn-strong shadow hover:opacity-95 transition">Login</a>
+          <a href="/user/upload" class="px-6 py-3 rounded-lg bg-emerald-500 text-white btn-strong shadow hover:opacity-95 transition">Upload Test Video</a>
+        </div>
+
+        <div class="mt-8">
+          <h4 class="text-sm font-semibold text-gray-700">Prediction example</h4>
+          <div class="mt-3 p-4 bg-gray-50 rounded-lg shadow">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-gray-600 text-sm">Last prediction</span>
+                <div class="font-semibold">Non-violence</div>
+              </div>
+              <div class="text-right text-sm text-gray-500">
+                Confidence: <span class="font-medium">0.82</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Colored grid (hover colors) -->
+    <section>
+      <h3 class="text-xl font-bold mb-6">Quick Actions & Info</h3>
+
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="card-spot hover-accent-1 p-8 border">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+              <img src="https://cdn-icons-png.flaticon.com/512/2621/2621129.png" class="w-14 h-14" alt="Manage Datasets" />
+            </div>
+            <div>
+              <h4 class="font-semibold">Manage Datasets</h4>
+              <p class="mt-2 text-gray-600 text-sm">View uploaded datasets, download, or delete. Accepted formats: zip, mp4 folders with labels.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-spot hover-accent-2 p-8 border">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+              <img src="https://cdn-icons-png.flaticon.com/512/833/833300.png" class="w-14 h-14" alt="Training Jobs" />
+            </div>
+            <div>
+              <h4 class="font-semibold">Training Jobs</h4>
+              <p class="mt-2 text-gray-600 text-sm">Start training with selected dataset, monitor logs, GPU/CPU usage, and cancel if needed.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-spot hover-accent-3 p-8 border">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+              <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" class="w-14 h-14" alt="Deploy Model" />
+            </div>
+            <div>
+              <h4 class="font-semibold">Deploy Model</h4>
+              <p class="mt-2 text-gray-600 text-sm">Deploy a trained model to the prediction service so users can use it for inference.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features / How it works -->
+    <section>
+      <h3 class="text-xl font-bold mb-6">Overview — Server-Centric Workflow</h3>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-white rounded-xl p-6 shadow-sm card-spot">
+          <h4 class="font-semibold mb-3">Upload Dataset</h4>
+          <p class="text-gray-600 text-sm">Admins upload labeled datasets (violence / non-violence). The server extracts clips, preprocesses frames, and prepares TF/PyTorch datasets.</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-sm card-spot">
+          <h4 class="font-semibold mb-3">Train & Validate</h4>
+          <p class="text-gray-600 text-sm">Start training jobs with configurable hyperparameters (epochs, lr, batch). Monitor validation metrics (precision, recall, F1) and save best checkpoints.</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-sm card-spot">
+          <h4 class="font-semibold mb-3">Predict</h4>
+          <p class="text-gray-600 text-sm">Users upload test videos which the prediction service infers with the selected model. Results include label and confidence, stored in user history.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer CTA -->
+    <section class="text-center">
+      <div class="inline-flex gap-6 rounded-xl bg-white p-8 shadow-lg">
+        <div class="text-left">
+          <div class="text-lg font-bold">Ready to start?</div>
+          <div class="text-gray-700 text-sm mt-1">Upload your dataset and begin training VD-Net for violence detection.</div>
+        </div>
+        <div class="flex items-center">
+          <a href="/admin/upload" class="ml-6 px-8 py-4 rounded-2xl bg-indigo-600 text-white btn-strong shadow-lg hover:scale-105 transition">Upload Dataset</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white mt-16 border-t">
+    <div class="max-w-7xl mx-auto px-8 py-6 flex flex-col md:flex-row justify-between items-center text-sm">
+      <div>© <span id="year"></span> VD-Net • Violence Detection</div>
+      <div class="mt-4 md:mt-0 text-gray-600">Built for academic experiments — dataset upload, model build, and test prediction workflows.</div>
+    </div>
+  </footer>
+
+  <!-- JS -->
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+
+</body>
+</html>
